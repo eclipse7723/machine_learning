@@ -1,5 +1,31 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+import os
+
+
+# Create directory for output plots
+SAVE_PICTURES = True
+script_dir = os.path.dirname(__file__)
+results_dir = os.path.join(script_dir, "output")
+if not os.path.isdir(results_dir):
+    ans = input(f"This lab creates images for tasks 13-15 in directory {results_dir},"
+                f" but it doesn't exists. I'll create it, ok?\n"
+                f"If no, program will creates matplotlib window with that graphs [Y/N] ")
+    if ans.lower() == "y":
+        os.makedirs(results_dir)
+    else:
+        SAVE_PICTURES = False
+
+
+def save_fig(fig, title):
+    if SAVE_PICTURES is False:
+        plt.show(block=True)
+        return
+    try:
+        fig.savefig(f"{results_dir}/{title}.jpg")
+    except FileNotFoundError as ex:
+        print(f"<!> Can't save graphic {title!r}, create folder '{results_dir}'")
+        plt.show(block=True)
 
 
 csv_name = "Top100-2007.csv"
@@ -113,3 +139,44 @@ mean_rating = pd.pivot_table(df, index="Country", values="Pts", aggfunc="mean").
 print(f"> Mean pts of players from each countries:")
 print(mean_rating, end="\n\n")
 
+# 13. Побудувати діаграму кількості програних матчів по кожній десятці гравців з Топ-100.
+for i in range(10):
+    fig, ax = plt.subplots()
+    _df = df.loc[i*10:i*10 + 10, ["Lose", "Name"]]
+    _df.plot(ax=ax, kind="bar")
+    ax.set_xticklabels(_df["Name"], rotation=90, ha='right')
+    graph_name = f"{i*10}_{i*10 + 10}"
+    ax.title.set_text(graph_name)
+    fig.tight_layout()
+    save_fig(fig, "task13__"+graph_name)
+
+# 14. Побудувати кругову діаграму сумарної величини призових для кожної країни.
+fig, ax = plt.subplots(figsize=(15, 10), dpi=150)
+_df = df.pivot_table(index="Country", values="Career Earnings", aggfunc="sum")
+_df = _df.sort_values(by="Career Earnings", ascending=False)
+_df.plot(ax=ax, kind="pie", subplots=True)
+ax.set_ylabel(None)
+legend = ax.legend(loc="center left", bbox_to_anchor=(-0.35, 0.5), title="Career Earnings by Country")
+legend_texts = legend.get_texts()
+for t in legend_texts:
+    new_label = f"{t.get_text()}: ${_df[_df.index == t.get_text()]['Career Earnings'].values[0]}"
+    t.set_text(new_label)
+save_fig(fig, "task14")
+
+# 15.a. Середня кількість очок для кожної країни;
+fig, ax = plt.subplots(figsize=(10, 5))
+mean_pts_by_country = df.groupby("Country")["Pts"].mean()
+mean_pts_by_country = mean_pts_by_country.sort_values(ascending=False)
+mean_pts_by_country.plot(ax=ax, kind="bar", ylabel="pts", xlabel="", title="Mean pts by country")
+fig.tight_layout()
+save_fig(fig, "task15_a")
+
+# 15.b. Середня кількість зіграних матчів тенісистами кожної країни.
+fig, ax = plt.subplots(figsize=(10, 5))
+mean_pts_by_country = df.groupby("Country")["Total"].mean()
+mean_pts_by_country = mean_pts_by_country.sort_values(ascending=False)
+mean_pts_by_country.plot(ax=ax, kind="bar", ylabel="total matches", xlabel="", title="Mean total matches by country")
+fig.tight_layout()
+save_fig(fig, "task15_b")
+
+input(" Press Enter to finish ".center(71, "="))
