@@ -7,7 +7,7 @@ import os
 SAVE_PICTURES = True
 script_dir = os.path.dirname(__file__)
 results_dir = os.path.join(script_dir, "output")
-if not os.path.isdir(results_dir):
+if not os.path.isdir(results_dir) and SAVE_PICTURES is not False:
     ans = input(f"This lab creates images for tasks 13-15 in directory {results_dir},"
                 f" but it doesn't exists. I'll create it, ok?\n"
                 f"If no, program will creates matplotlib window with that graphs [Y/N] ")
@@ -163,20 +163,20 @@ for t in legend_texts:
     t.set_text(new_label)
 save_fig(fig, "task14")
 
-# 15.a. Середня кількість очок для кожної країни;
+# task 15
 fig, ax = plt.subplots(figsize=(10, 5))
-mean_pts_by_country = df.groupby("Country")["Pts"].mean()
-mean_pts_by_country = mean_pts_by_country.sort_values(ascending=False)
-mean_pts_by_country.plot(ax=ax, kind="bar", ylabel="pts", xlabel="", title="Mean pts by country")
-fig.tight_layout()
-save_fig(fig, "task15_a")
 
+# 15.a. Середня кількість очок для кожної країни;
+mean_pts_by_country = df.groupby("Country")["Pts"].mean()
 # 15.b. Середня кількість зіграних матчів тенісистами кожної країни.
-fig, ax = plt.subplots(figsize=(10, 5))
-mean_pts_by_country = df.groupby("Country")["Total"].mean()
-mean_pts_by_country = mean_pts_by_country.sort_values(ascending=False)
-mean_pts_by_country.plot(ax=ax, kind="bar", ylabel="total matches", xlabel="", title="Mean total matches by country")
+mean_matches_by_country = df.groupby("Country")["Total"].mean()
+
+_df = pd.concat([mean_matches_by_country, mean_pts_by_country], axis=1)
+_df = _df.sort_values(by="Pts", ascending=False)
+_df = _df.rename(columns={"Pts": "Mean pts", "Total": "Mean total matches"})
+_df.plot(ax=ax, kind="bar", title="Mean pts and total matches by country")
+
 fig.tight_layout()
-save_fig(fig, "task15_b")
+save_fig(fig, "task15")
 
 input(" Press Enter to finish ".center(71, "="))
