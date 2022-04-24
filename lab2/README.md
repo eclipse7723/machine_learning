@@ -26,3 +26,27 @@ _Підгрупа №2_
 використовувалися для класифікації (див. **feature_importances_**).
 Пояснити, яким чином – на Вашу думку – цю важливість можна
 підрахувати. 
+
+---
+
+Зображення дерева прийняття рішень можна знайти в папці **output**.
+Датасет знаходиться в **Obesity.csv** (2111 записів), його стовпці (17):
+- Gender `(str): ['Female' 'Male']`
+- Age `(float)`
+- Height `(float)`
+- Weight `(float)`
+- family_history_with_overweight `(str): ['yes' 'no']`
+- FAVC `(str): ['yes' 'no']`
+- FCVC `(float)`
+- NCP `(float)`
+- CAEC `(str): ['Sometimes' 'Frequently' 'Always' 'no']`
+- SMOKE `(str): ['yes' 'no']`
+- CH2O `(float)`
+- SCC `(str): ['yes' 'no']`
+- FAF `(float)`
+- TUE `(float)`
+- CALC `(str): ['no' 'Sometimes' 'Frequently' 'Always']`
+- MTRANS `(str): ['Public_Transportation' 'Walking' 'Automobile' 'Motorbike' 'Bike']`
+- NObeyesdad `(str): ['Normal_Weight' 'Overweight_Level_I' 'Overweight_Level_II'
+ 'Obesity_Type_I' 'Insufficient_Weight' 'Obesity_Type_II'
+ 'Obesity_Type_III']` - цільова ознака
