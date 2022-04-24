@@ -14,7 +14,9 @@ MAX_DECISION_DEPTH = 5
 TRAIN_FRAC = 0.7
 TEST_FRAC = 0.3
 
-_DEBUG = True
+_DEBUG = True                       # Do not wait response from method msg
+_DEBUG_CREATE_GRAPH = True          # If False - no tree graphs would be created
+_DEBUG_SELECTED_GRAPHS_LIB = True   # If True use graph lib from TREE_VISUALIZATION else use all available
 
 
 # todo: translate ukrainian texts
@@ -100,78 +102,130 @@ msg(f"5. Поділили вибірки на вихідні аргументи 
 # Навчимося на тренувальних даних
 msg(f"Create DecisionTreeClassifier with max_depth={MAX_DECISION_DEPTH}",
     double_LF=False)
-classifier = tree.DecisionTreeClassifier(max_depth=MAX_DECISION_DEPTH)
-classifier.fit(tr_x, tr_y)
-test_predict = classifier.predict(test_x)
-
-test_predict_accuracy = metrics.accuracy_score(test_y, test_predict)
-_accuracy_percent = round(test_predict_accuracy*100, 2)
-
-
-def get_satisfy_label(percent):
-    # ONLY WORKS FOR PYTHON 3 (coz in python 2 dict has no order)
-    SATISFY_PERCENTS = {
-        100: "excellent",
-        98: "awesome",
-        95: "great",
-        75: "good",
-        50: "random",
-        0: "problematic"
-    }
-    for t, label in SATISFY_PERCENTS.items():
-        if percent >= t:
-            return label
-    return "error"
-
-
-msg(f"classifier Accuracy is {_accuracy_percent}%: " + get_satisfy_label(_accuracy_percent))
-
+gini_classifier = tree.DecisionTreeClassifier(max_depth=MAX_DECISION_DEPTH, criterion='gini')
+gini_classifier.fit(tr_x, tr_y)
 
 # 6. Представити графічно побудоване дерево за допомогою бібліотеки graphviz.
 
 
-def showMatplotlibTree(decision_tree, _feature_names, _class_names):
+def _showMatplotlibTree(decision_tree, _feature_names, _class_names, _suffix=""):
+    msg(f"Create tree graph to {OUTPUT_PATH}matplotlib_decision_tree{_suffix}.png using lib matplotlib",
+        double_LF=False, wait_response=False)
     fig, axes = plt.subplots(figsize=(50, 15), dpi=300)
     plt.tight_layout()
     tree.plot_tree(decision_tree, filled=True, ax=axes, fontsize=10,
                    feature_names=_feature_names, class_names=_class_names)
-    fig.savefig(OUTPUT_PATH + "matplotlib_tree.png")
+    fig.savefig(OUTPUT_PATH + f"matplotlib_tree{_suffix}.png")
 
 
-def showGraphvizTree(decision_tree, _feature_names, _class_names):
-    dot_data = tree.export_graphviz(decision_tree, filled=True, out_file="tree.dot",
+def _showGraphvizTree(decision_tree, _feature_names, _class_names, _suffix=""):
+    msg(f"Create tree graph to {OUTPUT_PATH}graphviz_decision_tree{_suffix}.png using lib graphviz",
+        double_LF=False, wait_response=False)
+    dot_data = tree.export_graphviz(decision_tree, filled=True,
                                     feature_names=_feature_names, class_names=_class_names)
-    graph = graphviz.Source(dot_data, format="png")
-    graph.render("graphviz_tree.png", directory=OUTPUT_PATH, overwrite_source=True)
+    graph = graphviz.Source(dot_data)
+    try:
+        graph.render(f"graphviz_tree{_suffix}", directory=OUTPUT_PATH,
+                     format="png", overwrite_source=True, cleanup=True)
+    except graphviz.backend.ExecutableNotFound as RuntimeError:
+        msg("<!> Failed to render graph, you need to install: https://graphviz.org/download/ and restart PC")
+        raise RuntimeError
 
 
+def showTree(decision_tree, _feature_names, _class_names, _suffix="", _force=False):
+    SHOW_TREE_FN = {
+        "graphviz": _showGraphvizTree,
+        "matplotlib": _showMatplotlibTree
+    }
+    if all([_DEBUG is True, _DEBUG_CREATE_GRAPH is False, _force is False]):
+        msg("skip graph creation _DEBUG_CREATE_GRAPH==False...")
+    elif _DEBUG is True and _DEBUG_SELECTED_GRAPHS_LIB is False:
+        for lib, show_tree in SHOW_TREE_FN.items():
+            try:
+                show_tree(decision_tree, _feature_names, _class_names, _suffix=_suffix)
+            except Exception as e:
+                msg(f"<!> An error occurred while show_tree using {lib!r}: {e}")
+    else:
+        show_tree = SHOW_TREE_FN.get(TREE_VISUALIZATION, "graphviz")
+        show_tree(decision_tree, _feature_names, _class_names, _suffix=_suffix)
+
+
+msg("6. Show DecisionTreeClassifier graph")
 feature_names = tr_x.columns
 class_names = list(NEW_CATEGORIES['NObeyesdad'].values())
+showTree(gini_classifier, feature_names, class_names, "_gini")
 
-SHOW_TREE_FN = {
-    "graphviz": showGraphvizTree,
-    "matplotlib": showMatplotlibTree
-}
 
-if _DEBUG is True:
-    for lib, show_tree in SHOW_TREE_FN.items():
-        try:
-            show_tree(classifier, feature_names, class_names)
-        except Exception as e:
-            msg(f"<!> An error occurred while show_tree using {lib!r}: {e}")
-else:
-    show_tree = SHOW_TREE_FN.get(TREE_VISUALIZATION, "matplotlib")
-    show_tree(classifier, feature_names, class_names)
+# 7.1. Обчислити класифікаційні метрики збудованої моделі для тренувальної та тестової вибірки.
+def report_metrics(X, y, classifier, sample_label=""):
+    """ :return: predicted array """
+    def get_satisfy_label(percent):
+        # ONLY WORKS FOR PYTHON 3 (coz in python 2 dict has no order)
+        SATISFY_PERCENTS = {
+            100: "excellent",
+            98: "awesome",
+            95: "great",
+            75: "good",
+            50: "random",
+            0: "problematic"
+        }
+        for t, label in SATISFY_PERCENTS.items():
+            if percent >= t:
+                return label
+        return "error"
 
-# todo: 7.1. Обчислити класифікаційні метрики збудованої моделі для тренувальної та тестової вибірки.
-pass
+    def in_percent(val):
+        return round(val*100, 2)
+
+    pred = classifier.predict(X)
+
+    print(f" metrics of {sample_label} sample ".center(50, "-"))
+
+    conf_matrix = metrics.confusion_matrix(y, pred)
+    ConfusionMatrixDisplay = metrics.ConfusionMatrixDisplay(conf_matrix)
+    fig, axes = plt.subplots()
+    axes.set_title(f"Confusion Matrix of {sample_label} sample")
+    ConfusionMatrixDisplay.plot(ax=axes)
+    fig.savefig(OUTPUT_PATH+sample_label+"_confusion_matrix.png")
+    print(f" You can found Confusion matrix in {OUTPUT_PATH+sample_label+'_confusion_matrix.png'}")
+
+    accuracy = metrics.accuracy_score(y, pred)
+    _accuracy_percent = in_percent(accuracy)
+    print(f" - Accuracy is {_accuracy_percent}% (Доля правильних відповідей): " + get_satisfy_label(_accuracy_percent))
+
+    accuracy = metrics.balanced_accuracy_score(y, pred)
+    _accuracy_percent = in_percent(accuracy)
+    print(f" - Balanced Accuracy is {_accuracy_percent}% (Збалансована влучність): " + get_satisfy_label(_accuracy_percent))
+
+    precision = metrics.precision_score(y, pred, average='macro')
+    _precision_percent = in_percent(precision)
+    print(f" - Precision is {_precision_percent}% (Наскільки влучно дані класифікуються)")
+
+    recall = metrics.recall_score(y, pred, average='macro')
+    _recall_percent = in_percent(recall)
+    print(f" - Recall is {_recall_percent}% (Наскільки добре класи ідентифікуються в цілому)")
+
+    F1 = metrics.f1_score(y, pred, average='macro')
+    _F1_percent = in_percent(F1)
+    print(f" - F1 is {_F1_percent}% (Оцінка класифікатора - середнє гармонічне precision та recall)")
+
+    print("-"*50)
+    return pred
+
+
+test_predict = report_metrics(test_x, test_y, gini_classifier, "gini_test")
+tr_predict = report_metrics(tr_x, tr_y, gini_classifier, "gini_training")
 
 # todo 7.2. Представити результати роботи моделі на тестовій вибірці графічно.
-pass
+pass    # ROC curve multi class...
 
 # todo 7.3. Порівняти результати, отриманні при застосуванні різних критеріїв розщеплення:
 #  інформаційний приріст на основі ентропії чи неоднорідності Джині.
-pass
+_classifier = tree.DecisionTreeClassifier(max_depth=MAX_DECISION_DEPTH, criterion='entropy')
+_classifier.fit(tr_x, tr_y)
+showTree(_classifier, feature_names, class_names, _suffix="_entropy", _force=True)
+tr_predict_entropy = report_metrics(tr_x, tr_y, _classifier, "entropy_training")
+msg("You can compare metrics of training sample for gini and entropy criterias")
 
 # todo 8. З’ясувати вплив максимальної кількості листів та мінімальної кількості
 #  елементів в листі дерева на результати класифікації. Результати представити графічно.
