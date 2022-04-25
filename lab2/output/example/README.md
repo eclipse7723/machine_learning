@@ -1,3 +1,15 @@
+### Decision Tree
+
+![Decision Tree](https://github.com/eclipse7723/machine_learning/blob/master/lab2/output/example/graphviz_tree_gini.png?raw=True)
+
+### Features importances
+
+![Decision Tree](https://github.com/eclipse7723/machine_learning/blob/master/lab2/output/example/gini_feature_importances_bar.png?raw=True)
+
+### Accuracy affects
+
+![Accuracy affects](https://github.com/eclipse7723/machine_learning/blob/master/lab2/output/example/accuracy_affects.png?raw=True)
+
 ### Multiclass Confusion Matrix
 
 ![Multiclass Confusion Matrix of gini_test_sample](https://github.com/eclipse7723/machine_learning/blob/master/lab2/output/example/gini_test_confusion_matrix.png?raw=true)
