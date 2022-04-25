@@ -24,7 +24,7 @@ def msg(message, wait_response=True, double_LF=True):
     if wait_response is True and _DEBUG is False:
         end_msg = "\n" if double_LF else ""
         print(f"> {message}")
-        input(" press enter ".center(20, "-") + end_msg)
+        input(" "*4 + " press enter ".center(20, "-") + end_msg)
     else:
         end_msg = "\n\n" if double_LF else "\n"
         print(f"> {message}", end=end_msg)
