@@ -67,10 +67,10 @@ for col in df.columns:
     if col in EXCEPT_COLS:
         # count values, make range and number all values in column
         labels = df[col].unique()
-        NEW_CATEGORIES[col] = {id_: label for id_, label in enumerate(labels, 1)}
+        NEW_CATEGORIES[col] = {id_: label for id_, label in enumerate(labels, 0)}
         msg(f"Created new category ids for column {col!r}: {NEW_CATEGORIES[col]}",
             double_LF=False, wait_response=False)
-        for i, label in enumerate(labels, 1):
+        for i, label in enumerate(labels, 0):
             df.loc[df[col] == label, col] = i
     else:
         for label, val in CATEGORY_REPLACE.items():
@@ -81,7 +81,7 @@ for col in df.columns:
         df[col] = df[col].astype("float")
 
 msg(f"Ми замінили усюди текстові категорії на числа: {CATEGORY_REPLACE}, "
-    f"а для колонок {EXCEPT_COLS} ми просто пронумеровали від 1 до кількості категорій стовпця:\n{df.head(10)}",
+    f"а для колонок {EXCEPT_COLS} ми просто пронумеровали від 0 до кількості категорій стовпця:\n{df.head(10)}",
     double_LF=False, wait_response=True)
 msg(f"На всяк випадок впевнимося, що типи даних датафрейму саме числові:\n{df.dtypes}")
 
