@@ -9,7 +9,7 @@ CSV_PATH = "Obesity.csv"
 TRAIN_FRAC = 0.7
 TEST_FRAC = 0.3
 
-_DEBUG = True                      # Do not wait response from method msg
+_DEBUG = False                      # Do not wait response from method msg
 
 
 def msg(message, wait_response=True, double_LF=True):
