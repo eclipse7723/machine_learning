@@ -5,7 +5,31 @@
   даних (наприклад, `"123"` (`str`) приводимо до числового типу `int` або `float`). Побудова діаграм.
   
 ## Лабораторна робота #2
-  Дерева прийняття рішень. Використання [Scikit-learn](https://scikit-learn.org/stable/install.html), [Graphviz](https://graphviz.org/download/), [Matplotlib](https://matplotlib.org/).
+  **Дерева прийняття рішень.** Використання [Scikit-learn](https://scikit-learn.org/stable/install.html) (`tree.DecisionTreeClassifier`),
+  [Graphviz](https://graphviz.org/download/), [Matplotlib](https://matplotlib.org/).
   
   Побудова класифікаційної моделі дерева прийняття рішень. Навчання на тренувальній вибірці.
-  Обчислення класифікаційних метрик збудованої моделі для тренувальної та тестової вибірки.
+  Обчислення класифікаційних метрик збудованої моделі для тренувальної та тестової вибірки. 
+
+## Лабораторна робота #3
+  **Логістична регресія.** Використання [Scikit-learn](https://scikit-learn.org/stable/install.html)
+  (`linear_model.LogisticRegression, ShuffleSplit`).
+
+  Побудова класифікаційної моделі логістичної регресії та навчання її. Графічне представлення результату.
+  Обчислення класифікаційних метрик збудованої моделі. Аналіз ступіню впливу атрибутів на результат класифікації.
+
+## Лабораторна робота #4
+  **Метод k найближчих сусідів.** Використання [Scikit-learn](https://scikit-learn.org/stable/install.html)
+  (`neighbors.KNeighborsClassifier, ShuffleSplit`).
+
+  Побудова класифікаційної на основі методу k найближчих сусідів та навчання її. 
+  Обчислення класифікаційних метрик збудованої моделі.
+  З’ясування впливу степеня метрики Мінковського (від 1 до 20) на результати класифікації.
+
+## Лабораторна робота #5
+  **Методи кластеризації.** Використання [Scikit-learn](https://scikit-learn.org/stable/install.html)
+  (`cluster.AgglomerativeClustering, cluster.KMeans, neighbors.NearestCentroid`).
+
+  Виконання розбиття набору даних на кластери, використовуючи функцію `KMeans` та `AgglomerativeClustering`.
+  Виведення центрів кластерів. Порівняння результатів двох методів кластеризації.
+  
